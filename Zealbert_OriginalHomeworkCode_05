@@ -1,0 +1,80 @@
+---
+title: "Zalbert_OriginalHomeworkCode_05"
+author: "Zoe Albert"
+date: "11/11/2021"
+output: html_document
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+###Using bootstrapping, we could also do the same for estimating standard errors and CIs around regression parameters, such as β coefficients.
+
+###[1] Using the “KamilarAndCooperData.csv” dataset, run a linear regression looking at log(HomeRange_km2) in relation to log(Body_mass_female_mean) and report your β coeffiecients (slope and intercept).
+
+library(curl)
+f <- curl("https://raw.githubusercontent.com/fuzzyatelin/fuzzyatelin.github.io/master/AN588_Fall21/KamilarAndCooperData.csv")
+d <- read.csv(f, header = TRUE, sep = ",", stringsAsFactors = FALSE)
+head(d)
+summary(d)
+###First things first, I need to load 
+
+library(lmodel2)
+###I have to download this in order 
+
+homerange <- log(d$HomeRange_km2)
+###Log is a built in function
+###I use the dollar sign to get out a certain point. 
+
+bodymass <- log(d$Brain_Size_Female_Mean)
+###I do the log again but this time for bodymass. 
+
+c <- cbind(d, homerange, bodymass)
+###I want to do these together, so now I am going to use cbind.
+###I am not sure if there is a specific way to space these. 
+###Do I need to name this? I am not sure if I need to do x<-...I think I need to for the formula, so I just named it c. 
+
+l <- lmodel2(homerange~bodymass, data= c  , range.y ="interval" , range.x="relative"  , nperm=0)
+###Now I want to use the actual function that I called earlier. 
+###I don't know what to make range.x and range.y, but this is what r seems to want me to do.
+###Zero idea what nperm is and how to determine
+
+mx <- l$regression.results$slope
+###I want to get slope from regression 
+###I get green, but I don't know where to find the slope
+
+b <-l$regression.results$Intercept
+###Intercept 
+```
+###[2] Then, use bootstrapping to sample from your data 1000 times with replacement, each time fitting the same model and calculating the same coefficients. This generates a sampling distribution for each β coefficient.
+ 
+###Estimate the standard error for each of your β coefficients as the standard deviation of the sampling distribution from your bootstrap and determine the 95% CI for each of your β coefficients based on the appropriate quantiles from your sampling distribution.
+```{r}
+s1 <- NULL
+s2 <- NULL
+for (i in 1:1000) { s1[[i]] <- sample(d$homerange,size =100, replace=TRUE) s2[[i]] <- sample(d$bodymass, size = 100, replace=TRUE)}
+###I keep getting an error, but I am not entierly sure why or how to fix it.  Are my lines wrong?
+
+mm <- NULL
+for (i in 1:1000) {
+  mm[[i]] <- lmodel2(s1[[i]]~s2[[i]],data = f, range.y = "interval", range.x = "relative")
+beta1[i] <-mm[[i]]$regression.results$Slope[1]
+beta0[i] <-mm[[i]]$regression.results$Intercept[1]
+}
+###This isn't working because my last one didn't work, I think?
+
+###How does the former compare to the SE estimated from your entire dataset using the formula for standard error implemented in lm()?
+###Waiting until I can figure out my problem before I can answer this?
+
+###How does the latter compare to the 95% CI estimated from your entire dataset?
+###I again feel like I have to wait, but its sd. Right?
+```
+
+###Come back to extra credit with help of group
+###Issues during this homework:
+1) I want to find a better way to display the slope and intercept. 
+2)As soon as my first formula was messed up on my second one I could not figure out where to go from there.
+3) How do I know what to put into the formulas as values???
+4)
+5)
