@@ -1,0 +1,69 @@
+---
+title: "WarrenKevin_PeerCommentary_Zalbert_05."
+author: "Zoe Albert"
+date: "11/18/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+---
+title: "Warrenkb_FinalHomeworkCode_05"
+author: "Warrenkevin Henderson"
+date: "11/17/2021"
+output: html_document
+---
+```{r}
+library(lmodel2)
+KC <- read.csv("https://raw.githubusercontent.com/fuzzyatelin/fuzzyatelin.github.io/master/AN588_Fall21/KamilarAndCooperData.csv")
+head(KC)
+summary(KC)
+###ZOE:This is working for me.  KC was a good thing to name it. 
+````
+
+```{r}
+Home_Range <- log(d$HomeRange_km2)
+Body_Mass_Female_Mean <- log(d$Body_mass_female_mean)
+```
+```{r}
+cbind <- cbind(d, Home_Range, Body_Mass_Female_Mean)
+l <- lmodel2(Home_Range~Body_Mass_Female_Mean, data= cbind  , range.y ="Interval" , range.x="Relative"  , nperm=0)
+mx <- l$regression.results$slope
+b <-l$regression.results$Intercept
+```
+
+```{r}
+S_1 <- NULL
+S_2 <- NULL
+for (i in 1:1000) { S_1[[i]] <- sample(KC$HomeRange_km2,size =100, replace=TRUE) 
+S_2[[i]] <- sample(KC$Body_mass_female_mean, size = 100, replace=TRUE)}
+```
+```{r}
+mm <- NULL
+for (i in 1:1000) {
+  mm[[i]] <- lmodel2(S_1[[i]]~S_2[[i]],data = KC, range.y = "Interval", range.x = "relative")
+beta1[i] <-mm[[i]]$regression.results$slope[1]
+beta0[i] <-mm[[i]]$regression.results$Intercept[1]
+}
+###ZOE: For some reason, both of the above are giving me an error that they don't know who KC is???? But I know you have it, soooo??
+```
+
+```{r}
+####ZOE: So, for part 2... I think thhe first thing you need to do is the standard deviation of b and mx...which on mine looked like this, so I am thining this should work. But I got different numbers when I ran yours and mine so maybe I have no idea what I am talking about...
+sd0 <- sd(b)
+sd0
+
+sd1 <- sd(mx)
+sd1
+
+A <- lm(Home_Range ~ Body_Mass_Female_Mean)
+B <- coef(summary(A))
+CI <- confint(A, level = 0.95)
+df <- data.frame(Bootstrapping_SE = c(sd0, sd1), Bootstrapping_95 = c(quantile(b, 0.95),quantile(mx, 0.95)))
+table <- cbind(B[,1:2],df,CI)
+table
+
+###ZOE: Maybe try something like the above???????
+
+```
