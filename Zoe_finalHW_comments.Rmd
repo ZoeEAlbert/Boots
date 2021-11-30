@@ -1,0 +1,114 @@
+---
+title: "Zoe FInal HW"
+author: "Mel"
+date: "11/30/2021"
+output: html_document
+---
+---
+title: "Zalbert_OriginalHomeworkCode_05"
+author: "Zoe Albert"
+date: "11/11/2021"
+output: html_document
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+###Using bootstrapping, we could also do the same for estimating standard errors and CIs around regression parameters, such as β coefficients.
+
+###[1] Using the “KamilarAndCooperData.csv” dataset, run a linear regression looking at log(HomeRange_km2) in relation to log(Body_mass_female_mean) and report your β coeffiecients (slope and intercept).
+
+```{r}
+library(curl)
+KC <- curl("https://raw.githubusercontent.com/fuzzyatelin/fuzzyatelin.github.io/master/AN588_Fall21/KamilarAndCooperData.csv")
+d <- read.csv(f, header = TRUE, sep = ",", stringsAsFactors = FALSE)
+head(d)
+summary(d)
+###First things first, I need to load 
+```
+
+*What is f?*
+
+```{r}
+library(lmodel2)
+###I have to download this in order 
+
+homerange <- log(d$HomeRange_km2)
+###Log is a built in function
+###I use the dollar sign to get out a certain point. 
+
+bodymass <- log(d$Brain_Size_Female_Mean)
+###I do the log again but this time for bodymass. 
+
+c <- cbind(d, homerange, bodymass)
+###I want to do these together, so now I am going to use cbind.
+###I am not sure if there is a specific way to space these. 
+###Do I need to name this? I am not sure if I need to do x<-...I think I need to for the formula, so I just named it c. 
+
+l <- lmodel2(homerange~bodymass, data= c  , range.y ="interval" , range.x="relative"  , nperm=0)
+###Now I want to use the actual function that I called earlier. 
+###I don't know what to make range.x and range.y, but this is what r seems to want me to do.
+###Zero idea what nperm is and how to determine
+
+mx <- l$regression.results$slope
+mx
+###I want to get slope from regression 
+###I get green, but I don't know where to find the slope
+
+b <-l$regression.results$Intercept
+b
+###Intercept 
+####Should I be getting 4 numbers? I guess thats fine for an intercept...
+```
+
+*Look at your model object and you can see you have multiple slope/intercept objects to choose from. Specify which you are looking for*
+
+###[2] Then, use bootstrapping to sample from your data 1000 times with replacement, each time fitting the same model and calculating the same coefficients. This generates a sampling distribution for each β coefficient.
+
+###Estimate the standard error for each of your β coefficients as the standard deviation of the sampling distribution from your bootstrap and determine the 95% CI for each of your β coefficients based on the appropriate quantiles from your sampling distribution.
+```{r}
+s1 <- NULL
+s2 <- NULL
+for (i in 1:1000) { s1[[i]] <- sample(d$HomeRange_km2, size =100, replace=TRUE)
+s2[[i]] <- sample(d$Body_mass_female_mean, size = 100, replace=TRUE)}
+###I keep getting an error, but I am not entierly sure why or how to fix it.  Are my lines wrong? WARENKEVIN IS A HERO.  I had it just slightly wrong, and he fixed the syntax. 
+mm <- NULL
+for (i in 1:1000) {
+  mm[[i]] <- lmodel2(s1[[i]]~s2[[i]],data = d, range.y = "interval", range.x = "relative")
+b[i] <-mm[[i]]$regression.results$Slope[1]
+mx[i] <-mm[[i]]$regression.results$Intercept[1]
+}
+ 
+###This isn't working because my last one didn't work, I think?  I got it to work  I think it is important to double check that I am not just copying code and changing terms.  i.e. beta1 i made b and beta2 i made mx, becuase it made more sense to me, but then I forgot like a dumb dumb which wouldn't have happened if I just annotated. 
+####"NO PERMUTATION TEST WILL BE PERFORMED" KEEPS SHOWING UP LIKE A RAVE. Why???
+
+sd0 <- sd(b)
+sd0
+#### So this is working, but not giving me any results....Time to try something else.I am an idiot.  All I needed to do, was write sd0 on a second line.  Answer I get is 0.0001083114
+sd1 <- sd(mx)
+sd1
+###Answer I get for standard error of mx is .8322136
+A <- lm(homerange ~ bodymass)
+B <- coef(summary(A))
+CI <- confint(A, level = 0.95)
+df <- data.frame(Bootstrapping_SE = c(sd0, sd1), Bootstrapping_95 = c(quantile(b, 0.95),quantile(mx, 0.95)))
+table <- cbind(B[,1:2],df,CI)
+table
+###I didn't really know what to call the first two things in terms of letters, becuase I don't really know why I need to do A or B???????? I get the confidence interval though...
+
+###How does the former compare to the SE estimated from your entire dataset using the formula for standard error implemented in lm()?
+###Not entierly sure what you mean by former????
+###How does the latter compare to the 95% CI estimated from your entire dataset?
+###Only seems to align with intercept (top line) and this makes me think I did something wrong???? JUST DID IT AGAIN AND GOT IT RIGHT I AM THE BEST STATICIAN THAT HAS EVER LIVED. 
+
+```
+*you also need to set your beta objects to null before using them in the second loop. the question is asking you to compare the regression from question 1 to your bootstrap. Also, you are using a combo of the lmodel2 and lm() functions, best to stay consistent (lm will give cleaner results, imo)*
+
+###Come back to extra credit with help of group
+###Issues during this homework:
+1) I want to find a better way to display the slope and intercept. 
+2)As soon as my first formula was messed up on my second one I could not figure out where to go from there.
+3) How do I know what to put into the formulas as values???
+4)Just I need to noteate better.  Imagine how many hours of my life I could save.
+5)Stats are hard. I still feel like I don't always know WHY I am doing something....
+I love the days where I do stats and think "I am the world's smartest man".
